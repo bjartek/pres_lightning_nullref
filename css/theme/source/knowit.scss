@@ -1,0 +1,64 @@
+/**
+ * Default theme for reveal.js.
+ * 
+ * Copyright (C) 2011-2012 Hakim El Hattab, http://hakim.se
+ */
+
+
+// Default mixins and settings -----------------
+@import "../template/mixins";
+@import "../template/settings";
+// ---------------------------------------------
+
+
+$colorGreen : #009682;
+$colorBlue: #3582c3;
+$colorRed: #c8374b;
+$colorYellow: #E1E114;
+$colorPurple: #874fAF;
+
+$headingFont: "HelveticaNeue-Bold", "Helvetica Neue Bold", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+$mainFont: "HelveticaNeue-Bold", "Helvetica Neue Bold", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+
+$headingColor: $colorGreen;
+$linkColor: $colorBlue;
+$mainFontSize: 32px;
+
+$selectionBackgroundColor: $colorPurple;
+
+$headingTextTransform: none;
+.reveal small { 
+  font-size: 0.4em;
+ }
+
+.reveal em { 
+  color: $colorRed;
+  font-style: normal;
+}
+
+.reveal strong { 
+  color: $colorYellow;
+  font-weight: normal;
+}
+
+@mixin bodyBackground() {
+	@include radial-gradient( rgba(28,30,32,1), rgba(85,90,95,1) );
+}
+
+#logo { 
+  position:absolute;
+  left: 10px;
+  bottom: 30px;
+  z-index: 20;
+}
+
+.hidden { 
+  display: none;
+  visibiligy:hidden;
+}
+
+
+
+// Theme template ------------------------------
+@import "../template/theme";
+// ---------------------------------------------

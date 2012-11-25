@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Null Reference: The Billion Dollar Mistake</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/knowit.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+        <section data-markdown><script type="text/template">
+# Null Reference
+## The Billion (american) Dollar Mistake
+
+av: [Bjarte Stien Karlsen](http://www.bjarte.org)
+
+    </script></section><section data-markdown><script type="text/template">
+## Agenda
+
+- why is null reference a problem?
+- streetname example
+- the java way manual style
+- the grooooooovy way
+- guava optional style
+- scala style
+
+    </script></section><section>
+<section data-markdown><script type="text/template">
+# Why is null reference a problem?
+
+    </script></section><section data-markdown><script type="text/template">
+## NullPointerException
+<blockquote>Checking for NULL is not enforced by the java compiler.</blockquote>
+
+
+    </script></section><section data-markdown><script type="text/template">
+## Cognitive burden
+
+ - the programmer has to ensure that we check for Null
+
+    </script></section><section data-markdown><script type="text/template">
+## ..but tools might help us?
+ - Annotations like *@NotNull* and **@Nullable** might help
+ - But there are a [ton of
+   variants](http://stackoverflow.com/questions/4963300/which-notnull-java-annotation-should-i-use) what to choose?
+ - Might help, but does not solve the problem
+ 
+
+    </script></section></section>
+<section>
+<section data-markdown><script type="text/template">
+# The problem
+
+<blockquote>Return the streetname of the place where a person lives</blockquote>
+
+    </script></section><section data-markdown><script type="text/template">
+## Data
+
+<pre><code class="java">
+class Person { 
+
+  private final Address address;
+
+  public Person(Address address) { 
+    this.address = address;
+  }
+
+  public Address getAddress() { 
+    return address;
+  }
+ }
+</code></pre>
+
+<pre><code class="java">
+class Address { 
+
+  private final String streetname
+
+  public Person(String streetname) { 
+     this.streetname = streetname;
+   }
+
+  public Sting getStreetName() { 
+     return streetname;
+   }
+}
+</code></pre>
+
+
+
+    </script></section></section>
+<section>
+<section data-markdown><script type="text/template">
+# The Java Way manual Style
+
+    </script></section><section data-markdown><script type="text/template">
+## Java way
+
+<pre><code contenteditable class="java">
+public class Streetname1 { 
+  public static String streetName(Person person) { 
+    return person.getAddress().getStreetName();
+  }
+ }
+</code></pre>
+
+    </script></section><section data-markdown><script type="text/template">
+## Java way take 2
+
+<pre><code class="java">
+public class Streetname2 { 
+  public static String streetName(Person person) { 
+    if(person == null || person.getAddress() == null) {
+      return null;
+    }
+    return person.getAddress().getStreetName();
+  }
+}
+</code></pre>
+
+
+
+    </script></section></section>
+<section>
+<section data-markdown><script type="text/template">
+# The Grooooovy Way
+
+    </script></section><section data-markdown><script type="text/template">
+## ?. POWAH
+
+<pre><code class="groovy">def streetName(person) { 
+ return person?.address?.street
+}
+</code></groovy>
+
+
+    </script></section></section>
+<section>
+<section data-markdown><script type="text/template">
+# Guava Optional 
+
+    </script></section><section data-markdown><script type="text/template">
+## Optional
+
+<pre><code contenteditable class="java">//some crazy imports here 
+public class Streetname3 { 
+  public static String streetName(Optional&lt;Person&gt; p) { 
+    if(p.absent()) { 
+      return null;
+    }
+    Person person = p.get();
+    if(person.getAddress().absent()) { 
+      return null;
+    }
+
+    return person.getAddress().get().getStreetName();
+  }
+}
+
+</code></pre>
+
+ - [javadoc](http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/base/Optional.html) for Optional in guava svn
+
+
+    </script></section><section data-markdown><script type="text/template">
+#YUCK!
+
+    </script></section><section data-markdown><script type="text/template">
+## Optional another way? 
+
+<pre><code contenteditable class="java">//some crazy imports here..
+public class Streetname3 { 
+  public static String streetName(Optional<Person> p) { 
+    for(Person p: p.asSet()) { 
+     for(Address a: p.getAddress().asSet())  { 
+        return a.getStreetName();
+     }
+    }
+    return null;
+  }
+}
+
+</code></pre>
+
+- for more info see [From Optional to Monad with Guava](https://kerflyn.wordpress.com/2011/12/05/from-optional-to-monad-with-guava/)
+
+    </script></section></section>
+<section>
+<section data-markdown><script type="text/template">
+# Scala style
+
+
+    </script></section><section data-markdown><script type="text/template">
+##  map/flatmap
+
+<pre><code contenteditable class="java">def streetName(person:Option[Person]): Option[String] = 
+  person.flatMap(p => p.address.map(_.streetName))
+</code></pre>
+
+
+    </script></section><section data-markdown><script type="text/template">
+## for comprehension
+
+<pre><code contenteditable class="java">def streetName(person:Option[Person]): Option[String] = 
+  for { 
+    p <- person
+    a <- p.address
+  } yield a.streetName
+
+</code></pre>
+
+
+    </script></section><section data-markdown><script type="text/template">
+#What did we just use? 
+
+    </script></section><section data-markdown><script type="text/template">
+#MONAD!
+
+    </script></section></section>
+<section data-markdown><script type="text/template">
+## Conclusion 
+
+ - Tools that help the compiler find NPE is a good thing
+ - Tools such as Google Guava's Optional are very verbose
+ - NPE's are almost non existing in idiomatic scala due to Option monad.
+
+    </script></section>
+			</div>
+
+      <div id="logo">
+        <img src="img/knowit_logo.png" width="200" id="main_logo" alt="main_logo"/>
+        <img src="img/knowit_symbol.png" id="alt_logo" width="50" alt ="alt_logo" class="hidden"/>
+      </div>
+
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/none
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+
+				]
+			});
+
+      Reveal.addEventListener( 'slidechanged', function( event ) {
+          var logo = document.getElementById("main_logo");
+          var symbol = document.getElementById("alt_logo");
+        if(event.indexh == 0) { 
+          logo.className = ""
+          symbol.className = "hidden"
+        } else {
+          logo.className = "hidden"
+          symbol.className = ""
+        }
+      } );
+		</script>
+	</body>
+</html>
