@@ -82,7 +82,8 @@ av: [Bjarte Stien Karlsen](http://www.bjarte.org)
     </script></section><section data-markdown><script type="text/template">
 ## Data
 
-<pre><code class="java">
+<pre><code class="java">package org.bjartek.nullref;
+
 class Person { 
 
   private final Address address;
@@ -97,16 +98,17 @@ class Person {
  }
 </code></pre>
 
-<pre><code class="java">
+<pre><code class="java">package org.bjartek.nullref;
+
 class Address { 
 
-  private final String streetname
+  private final String streetname;
 
-  public Person(String streetname) { 
+  public Address(String streetname) { 
      this.streetname = streetname;
    }
 
-  public Sting getStreetName() { 
+  public String getStreetName() { 
      return streetname;
    }
 }
@@ -122,9 +124,10 @@ class Address {
     </script></section><section data-markdown><script type="text/template">
 ## Java way
 
-<pre><code contenteditable class="java">
+<pre><code contenteditable class="java">package org.bjartek.nullref;
+
 public class Streetname1 { 
-  public static String streetName(Person person) { 
+  public String streetName(Person person) { 
     return person.getAddress().getStreetName();
   }
  }
@@ -134,6 +137,8 @@ public class Streetname1 {
 ## Java way take 2
 
 <pre><code class="java">
+package org.bjartek.nullref;
+
 public class Streetname2 { 
   public static String streetName(Person person) { 
     if(person == null || person.getAddress() == null) {
@@ -154,8 +159,12 @@ public class Streetname2 {
     </script></section><section data-markdown><script type="text/template">
 ## ?. POWAH
 
-<pre><code class="groovy">def streetName(person) { 
- return person?.address?.street
+<pre><code class="groovy">package org.bjartek.nullref
+
+class Streetname5 { 
+  def streetName(person) { 
+    return person?.address?.street
+  }
 }
 </code></groovy>
 
@@ -168,14 +177,16 @@ public class Streetname2 {
     </script></section><section data-markdown><script type="text/template">
 ## Optional
 
-<pre><code contenteditable class="java">//some crazy imports here 
+<pre><code class="java">package org.bjartek.nullref;
+import com.google.common.base.Optional;
+
 public class Streetname3 { 
-  public static String streetName(Optional&lt;Person&gt; p) { 
-    if(p.absent()) { 
+  public static String streetName(Optional<GPerson> p) { 
+    if(!p.isPresent()) { 
       return null;
     }
-    Person person = p.get();
-    if(person.getAddress().absent()) { 
+    GPerson person = p.get();
+    if(!person.getAddress().isPresent()) { 
       return null;
     }
 
@@ -194,12 +205,14 @@ public class Streetname3 {
     </script></section><section data-markdown><script type="text/template">
 ## Optional another way? 
 
-<pre><code contenteditable class="java">//some crazy imports here..
-public class Streetname3 { 
-  public static String streetName(Optional<Person> p) { 
-    for(Person p: p.asSet()) { 
-     for(Address a: p.getAddress().asSet())  { 
-        return a.getStreetName();
+<pre><code contenteditable class="java">package org.bjartek.nullref;
+import com.google.common.base.Optional;
+
+public class Streetname4 { 
+  public static String streetName(Optional<GPerson> p) { 
+    for(GPerson pers: p.asSet()) { 
+     for(Address adr: pers.getAddress().asSet())  { 
+        return adr.getStreetName();
      }
     }
     return null;
@@ -219,7 +232,11 @@ public class Streetname3 {
     </script></section><section data-markdown><script type="text/template">
 ##  map/flatmap
 
-<pre><code contenteditable class="java">def streetName(person:Option[Person]): Option[String] = 
+<pre><code class="java">
+case class Address(streetName: String)
+case class Person(address: Option[Address])
+
+def streetName(person:Option[Person]): Option[String] = 
   person.flatMap(p => p.address.map(_.streetName))
 </code></pre>
 
@@ -227,7 +244,11 @@ public class Streetname3 {
     </script></section><section data-markdown><script type="text/template">
 ## for comprehension
 
-<pre><code contenteditable class="java">def streetName(person:Option[Person]): Option[String] = 
+<pre><code class="java">
+case class Address(streetName: String)
+case class Person(address: Option[Address])
+
+def streetName(person:Option[Person]): Option[String] = 
   for { 
     p <- person
     a <- p.address

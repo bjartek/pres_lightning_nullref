@@ -1,4 +1,6 @@
 
+package org.bjartek.nullref;
+
 public class Streetname2 { 
   public static String streetName(Person person) { 
     if(person == null || person.getAddress() == null) {
