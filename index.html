@@ -181,7 +181,7 @@ class Streetname5 {
 import com.google.common.base.Optional;
 
 public class Streetname3 { 
-  public static String streetName(Optional<GPerson> p) { 
+  public static String streetName(Optional&lt;GPerson&gt; p) { 
     if(!p.isPresent()) { 
       return null;
     }
@@ -209,7 +209,7 @@ public class Streetname3 {
 import com.google.common.base.Optional;
 
 public class Streetname4 { 
-  public static String streetName(Optional<GPerson> p) { 
+  public static String streetName(Optional&lt;GPerson&gt; p) { 
     for(GPerson pers: p.asSet()) { 
      for(Address adr: pers.getAddress().asSet())  { 
         return adr.getStreetName();
@@ -237,7 +237,7 @@ case class Address(streetName: String)
 case class Person(address: Option[Address])
 
 def streetName(person:Option[Person]): Option[String] = 
-  person.flatMap(p => p.address.map(_.streetName))
+  person.flatMap(p =&gt; p.address.map(_.streetName))
 </code></pre>
 
 
@@ -250,8 +250,8 @@ case class Person(address: Option[Address])
 
 def streetName(person:Option[Person]): Option[String] = 
   for { 
-    p <- person
-    a <- p.address
+    p &lt;- person
+    a &lt;- p.address
   } yield a.streetName
 
 </code></pre>
