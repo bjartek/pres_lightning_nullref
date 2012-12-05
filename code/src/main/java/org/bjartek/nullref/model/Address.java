@@ -1,14 +1,14 @@
-package org.bjartek.nullref;
+package org.bjartek.nullref.model;
 
-class Address { 
+public class Address {
 
-  private final String streetname;
+    private final String streetname;
 
-  public Address(String streetname) { 
-     this.streetname = streetname;
-   }
+    public Address(String streetname) {
+        this.streetname = streetname;
+    }
 
-  public String getStreetName() { 
-     return streetname;
-   }
+    public String getStreetName() {
+        return streetname;
+    }
 }

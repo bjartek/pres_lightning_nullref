@@ -38,7 +38,11 @@
 # Null Reference
 ## The Billion (american) Dollar Mistake
 
-av: [Bjarte Stien Karlsen](http://www.bjarte.org)
+[Bjarte Stien Karlsen](http://www.bjarte.org) 
+
+<small>
+[slides](https://github.com/bjartek/pres_lightning_nullref) created with [revealit](https://github.com/bjartek/revealit)/[reveal.js](http://lab.hakim.se/reveal-js/) 
+</small>
 
     </script></section><section data-markdown><script type="text/template">
 ## Agenda
@@ -58,59 +62,66 @@ av: [Bjarte Stien Karlsen](http://www.bjarte.org)
 ## NullPointerException
 <blockquote>Checking for NULL is not enforced by the java compiler.</blockquote>
 
-
     </script></section><section data-markdown><script type="text/template">
 ## Cognitive burden
 
- - the programmer has to ensure that we check for Null
+ - the programmer has to ensure that the code check for Null
 
     </script></section><section data-markdown><script type="text/template">
-## ..but tools might help us?
+## ..tools might help us?
  - Annotations like *@NotNull* and **@Nullable** might help
  - But there are a [ton of
-   variants](http://stackoverflow.com/questions/4963300/which-notnull-java-annotation-should-i-use) what to choose?
- - Might help, but does not solve the problem
+   variants](http://stackoverflow.com/questions/4963300/which-notnull-java-annotation-should-i-use) and IMHO none are without problems.
+ - Might help, but does not solve the problem. You can choose to ignore warnings/ide help/checkstyle errors
  
 
     </script></section></section>
 <section>
 <section data-markdown><script type="text/template">
-# The problem
+# Task
 
-<blockquote>Return the streetname of the place where a person lives</blockquote>
+<blockquote>Return the streetname of the address where a person lives</blockquote>
+
+- [https://github.com/bjartek/pres\_lightning\_nullref/tree/master/code](https://github.com/bjartek/pres_lightning_nullref/tree/master/code)
+- java/groovy code uses gradle to build
+- scala code tested in REPL
+- should have unit tests but no time (sick)
 
     </script></section><section data-markdown><script type="text/template">
-## Data
+## Person POJO
 
-<pre><code class="java">package org.bjartek.nullref;
+<pre><code class="java">package org.bjartek.nullref.model;
 
-class Person { 
+public class Person {
 
-  private final Address address;
+    private final Address address;
 
-  public Person(Address address) { 
-    this.address = address;
-  }
+    public Person(Address address) {
+        this.address = address;
+    }
 
-  public Address getAddress() { 
-    return address;
-  }
- }
+    public Address getAddress() {
+        return address;
+    }
+}
 </code></pre>
 
-<pre><code class="java">package org.bjartek.nullref;
+    </script></section><section data-markdown><script type="text/template">
+## Address POJO
 
-class Address { 
+<pre><code class="java">package org.bjartek.nullref.model;
 
-  private final String streetname;
+public class Address {
 
-  public Address(String streetname) { 
-     this.streetname = streetname;
-   }
+    private final String streetname;
 
-  public String getStreetName() { 
-     return streetname;
-   }
+    public Address(String streetname) {
+        this.streetname = streetname;
+    }
+
+    public String getStreetName() {
+        return streetname;
+    }
 }
 </code></pre>
 
@@ -126,11 +137,17 @@ class Address {
 
 <pre><code contenteditable class="java">package org.bjartek.nullref;
 
-public class Streetname1 { 
-  public String streetName(Person person) { 
-    return person.getAddress().getStreetName();
-  }
- }
+
+import com.google.common.base.Objects;
+import org.bjartek.nullref.model.Person;
+
+public class PlainJava implements StreetnameProvider {
+
+    @Override
+    public String streetName(Person person) {
+        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
+    }
+}
 </code></pre>
 
     </script></section><section data-markdown><script type="text/template">
@@ -139,13 +156,18 @@ public class Streetname1 {
 <pre><code class="java">
 package org.bjartek.nullref;
 
-public class Streetname2 { 
-  public static String streetName(Person person) { 
-    if(person == null || person.getAddress() == null) {
-      return null;
+import com.google.common.base.Objects;
+import org.bjartek.nullref.model.Person;
+
+public class PlainJavaNullsafe implements StreetnameProvider {
+
+    @Override
+    public String streetName(Person person) {
+        if (person == null || person.getAddress() == null) {
+            return StreetnameProvider.DEFAULT;
+        }
+        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
     }
-    return person.getAddress().getStreetName();
-  }
 }
 </code></pre>
 
@@ -161,10 +183,16 @@ public class Streetname2 {
 
 <pre><code class="groovy">package org.bjartek.nullref
 
-class Streetname5 { 
-  def streetName(person) { 
-    return person?.address?.street
-  }
+import com.google.common.base.Objects
+import org.bjartek.nullref.model.Person
+
+class Groovy implements StreetnameProvider {
+
+    @Override
+    String streetName(Person person) {
+        String name = person?.address?.streetName
+        return Objects.firstNonNull(name, StreetnameProvider.DEFAULT)
+    }
 }
 </code></groovy>
 
@@ -178,20 +206,24 @@ class Streetname5 {
 ## Optional
 
 <pre><code class="java">package org.bjartek.nullref;
+
 import com.google.common.base.Optional;
+import org.bjartek.nullref.gmodel.Person;
 
-public class Streetname3 { 
-  public static String streetName(Optional&lt;GPerson&gt; p) { 
-    if(!p.isPresent()) { 
-      return null;
-    }
-    GPerson person = p.get();
-    if(!person.getAddress().isPresent()) { 
-      return null;
-    }
+public class GuavaManual implements StreetnameProviderOptional {
 
-    return person.getAddress().get().getStreetName();
-  }
+    @Override
+    public String streetName(Optional&lt;Person&gt; p) {
+        if (!p.isPresent()) {
+            return StreetnameProviderOptional.DEFAULT;
+        }
+        Person person = p.get();
+        if (!person.getAddress().isPresent()) {
+            return StreetnameProviderOptional.DEFAULT;
+        }
+
+        return person.getAddress().get().getStreetName().or(StreetnameProviderOptional.DEFAULT);
+    }
 }
 
 </code></pre>
@@ -206,17 +238,21 @@ public class Streetname3 {
 ## Optional another way? 
 
 <pre><code contenteditable class="java">package org.bjartek.nullref;
-import com.google.common.base.Optional;
 
-public class Streetname4 { 
-  public static String streetName(Optional&lt;GPerson&gt; p) { 
-    for(GPerson pers: p.asSet()) { 
-     for(Address adr: pers.getAddress().asSet())  { 
-        return adr.getStreetName();
-     }
+import com.google.common.base.Optional;
+import org.bjartek.nullref.gmodel.*;
+
+public class GuavaIterator implements StreetnameProviderOptional {
+
+    @Override
+    public String streetName(Optional&lt;Person&gt; p) {
+        for (Person person : p.asSet()) {
+            for (Address adr : person.getAddress().asSet()) {
+                return adr.getStreetName().or(StreetnameProvider.DEFAULT);
+            }
+        }
+        return StreetnameProviderOptional.DEFAULT;
     }
-    return null;
-  }
 }
 
 </code></pre>
@@ -236,8 +272,8 @@ public class Streetname4 {
 case class Address(streetName: String)
 case class Person(address: Option[Address])
 
-def streetName(person:Option[Person]): Option[String] = 
-  person.flatMap(p =&gt; p.address.map(_.streetName))
+def streetName(person:Option[Person]): String = 
+  person.flatMap(p =&gt; p.address.map(_.streetName)) .getOrElse(&quot;Not Found&quot;)
 </code></pre>
 
 
@@ -248,11 +284,14 @@ def streetName(person:Option[Person]): Option[String] =
 case class Address(streetName: String)
 case class Person(address: Option[Address])
 
-def streetName(person:Option[Person]): Option[String] = 
-  for { 
+def streetName(person:Option[Person]): String = {
+  val name = for { 
     p &lt;- person
     a &lt;- p.address
   } yield a.streetName
+
+  name.getOrElse(&quot;Not Found&quot;)
+}
 
 </code></pre>
 

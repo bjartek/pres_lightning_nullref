@@ -1,11 +1,14 @@
 apply plugin: 'groovy'
+apply plugin:'application'
+
+mainClassName = "org.bjartek.nullref.Main"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    groovy group: 'org.codehaus.groovy', name: 'groovy', version: '1.7.10'
-    groovy group : 'com.google.guava', name: 'guava', version : '13.0.1'
-
+	groovy "org.codehaus.groovy:groovy-all:1.8.8"
+  groovy "com.google.guava:guava:13.0.1"
 }
+
