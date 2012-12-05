@@ -11,6 +11,7 @@ public class PlainJavaNullsafe implements StreetnameProvider {
         if (person == null || person.getAddress() == null) {
             return StreetnameProvider.DEFAULT;
         }
-        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
+        String name = person.getAddress().getStreetName();
+        return Objects.firstNonNull(name, StreetnameProvider.DEFAULT);
     }
 }

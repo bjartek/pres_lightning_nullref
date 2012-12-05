@@ -8,6 +8,7 @@ public class PlainJava implements StreetnameProvider {
 
     @Override
     public String streetName(Person person) {
-        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
+        String name = person.getAddress().getStreetName();
+        return Objects.firstNonNull(name, StreetnameProvider.DEFAULT);
     }
 }

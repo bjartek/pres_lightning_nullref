@@ -1,6 +1,12 @@
 
-case class Address(streetName: String)
+case class Address(streetName: Option[String])
 case class Person(address: Option[Address])
 
-def streetName(person:Option[Person]): String = 
-  person.flatMap(p => p.address.map(_.streetName)) .getOrElse("Not Found")
+def streetName(person:Option[Person]): String = {
+  val name = person.flatMap{pers =>
+    pers.address.flatMap{adr =>
+      adr.streetName
+    }
+  }
+  name.getOrElse("Not Found")
+}

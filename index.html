@@ -145,7 +145,8 @@ public class PlainJava implements StreetnameProvider {
 
     @Override
     public String streetName(Person person) {
-        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
+        String name = person.getAddress().getStreetName();
+        return Objects.firstNonNull(name, StreetnameProvider.DEFAULT);
     }
 }
 </code></pre>
@@ -166,7 +167,8 @@ public class PlainJavaNullsafe implements StreetnameProvider {
         if (person == null || person.getAddress() == null) {
             return StreetnameProvider.DEFAULT;
         }
-        return Objects.firstNonNull(person.getAddress().getStreetName(), StreetnameProvider.DEFAULT);
+        String name = person.getAddress().getStreetName();
+        return Objects.firstNonNull(name, StreetnameProvider.DEFAULT);
     }
 }
 </code></pre>
@@ -222,7 +224,8 @@ public class GuavaManual implements StreetnameProviderOptional {
             return StreetnameProviderOptional.DEFAULT;
         }
 
-        return person.getAddress().get().getStreetName().or(StreetnameProviderOptional.DEFAULT);
+        Optional&lt;String&gt; name =    person.getAddress().get().getStreetName();
+        return name.or(StreetnameProviderOptional.DEFAULT);
     }
 }
 
@@ -269,11 +272,17 @@ public class GuavaIterator implements StreetnameProviderOptional {
 ##  map/flatmap
 
 <pre><code class="java">
-case class Address(streetName: String)
+case class Address(streetName: Option[String])
 case class Person(address: Option[Address])
 
-def streetName(person:Option[Person]): String = 
-  person.flatMap(p =&gt; p.address.map(_.streetName)) .getOrElse(&quot;Not Found&quot;)
+def streetName(person:Option[Person]): String = {
+  val name = person.flatMap{pers =&gt;
+    pers.address.flatMap{adr =&gt;
+      adr.streetName
+    }
+  }
+  name.getOrElse(&quot;Not Found&quot;)
+}
 </code></pre>
 
 
@@ -281,14 +290,15 @@ def streetName(person:Option[Person]): String =
 ## for comprehension
 
 <pre><code class="java">
-case class Address(streetName: String)
+case class Address(streetName: Option[String])
 case class Person(address: Option[Address])
 
 def streetName(person:Option[Person]): String = {
   val name = for { 
     p &lt;- person
     a &lt;- p.address
-  } yield a.streetName
+    sn &lt;- a.streetName
+  } yield sn
 
   name.getOrElse(&quot;Not Found&quot;)
 }

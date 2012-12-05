@@ -15,7 +15,8 @@ public class GuavaManual implements StreetnameProviderOptional {
             return StreetnameProviderOptional.DEFAULT;
         }
 
-        return person.getAddress().get().getStreetName().or(StreetnameProviderOptional.DEFAULT);
+        Optional<String> name =    person.getAddress().get().getStreetName();
+        return name.or(StreetnameProviderOptional.DEFAULT);
     }
 }
 

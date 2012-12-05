@@ -14,11 +14,9 @@ public class MainGuava {
 //        StreetnameProviderOptional service = new GuavaIterator();
 
 
-
         Optional<String> streetName = Optional.of("Lofthusveien");
-        Optional<Person> person =Optional.of(new Person(Optional.of(new Address(streetName))));
+        Optional<Person> person = Optional.of(new Person(Optional.of(new Address(streetName))));
         System.out.println(service.streetName(person));
-
 
 
         Optional<Person> noPerson = Optional.absent();
